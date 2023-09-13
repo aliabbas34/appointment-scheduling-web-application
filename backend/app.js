@@ -375,3 +375,16 @@ app.get('/book/consultant-data/:id',authenticateUser,async (req,res)=>{
 app.listen(3000,()=>{
     console.log("server running on port 3000");
 });
+
+//converting HH:MM to minutes and then back to string
+// const a=719;
+// const ans=a/60;
+// console.log(ans.toString())
+// const str=ans.toString();
+// const s=str.split('.');
+// const l=s[1].length;
+// let ss="1";
+// for(let i=0;i<l;i++) ss+="0";
+// const d=parseInt(ss);
+// const aa=Math.round(parseInt(s[1])/parseInt(d)*60)
+// console.log(aa)
