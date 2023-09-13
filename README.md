@@ -52,6 +52,16 @@ Otherwise you can do it using terminal.
 4. Enter the password.
 5. paste the content of schema.sql file and run it
 
+## Environment Variables
+
+To run this project, you will need to add the following environment variables to your .env file
+
+`MYSQL_HOST`
+`MYSQL_USER`
+`MYSQL_PASSWORD`
+`MYSQL_DATABASE`
+`SECRET`
+
 &nbsp;
 
 Start the server
