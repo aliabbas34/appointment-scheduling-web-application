@@ -368,23 +368,44 @@ app.get('/book/consultant-data/:id',authenticateUser,async (req,res)=>{
     }
 })
 
-// app.get('/daysoff/:id',authenticateUser,async(req,res)=>{
-//     const id=parseInt(req.parama)
-// })
+
+//convert time given in HH:MM format to minutes.
+function convertToMinutes(time){
+    const arr=time.split(":");
+    const hour=parseInt(arr[0]);
+    const mins=parseInt(arr[1]);
+    const minutes=hour*60+mins;
+    return minutes;
+}
+//convert given minutes into time format HH:MM
+function convertToString(minutes){
+    //by dividing with 60 we can get a decimal value, value before decimal is hour and after decimal is minutes.
+    //so we have to parse that accordingly.
+    const calc=minutes/60;
+    //check whether it is decimal or not
+    let isDecimal=true;
+    if((calc*10)%10===0) isDecimal=false;
+    if(isDecimal){
+        const str=calc.toString();
+        const arr=str.split('.');
+        //removing decimal from the decimal part.
+        const len=arr[1].length;
+        let divisor="1";
+        for(let i=0;i<len;i++) divisor+="0";
+        const divisorInt=parseInt(divisor);
+        const minutes=Math.round((parseInt(arr[1])/divisorInt)*60);
+        const hour=arr[0];
+        const ansString=hour+":"+minutes;
+        return ansString;
+    }
+    else{
+        const ansString=calc.toString()+":00";
+        return ansString;
+    }
+}
+
 
 app.listen(3000,()=>{
     console.log("server running on port 3000");
 });
 
-//converting HH:MM to minutes and then back to string
-// const a=719;
-// const ans=a/60;
-// console.log(ans.toString())
-// const str=ans.toString();
-// const s=str.split('.');
-// const l=s[1].length;
-// let ss="1";
-// for(let i=0;i<l;i++) ss+="0";
-// const d=parseInt(ss);
-// const aa=Math.round(parseInt(s[1])/parseInt(d)*60)
-// console.log(aa)
