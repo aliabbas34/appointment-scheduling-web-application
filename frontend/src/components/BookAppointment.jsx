@@ -6,6 +6,7 @@ import dayjs from "dayjs";
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { DateCalendar } from '@mui/x-date-pickers/DateCalendar';
+import CircularProgress from '@mui/material/CircularProgress';
 
 function BookAppointment(){
     const [date, setDate] = useState(dayjs());
@@ -26,14 +27,14 @@ function BookAppointment(){
         }
         getConsultantData();
     },[])
-
+    
     return(
         <div style={{backgroundColor:"rgb(243, 246, 249)",height: '98.3vh',width:'98.3dvw', display:'flex',justifyContent:'space-evenly'}}>
             <div style={{ flexGrow:1, maxWidth:'40%'}}>
                 <Consultant data={consultantData}></Consultant>
             </div>
             <div style={{flexGrow:2, maxWidth:'40%'}}>
-                <LoadCalendar value={date} setValue={setDate} days_off={consultantData.days_off}/>
+                <LoadCalendar value={date} setValue={setDate} days_off={consultantData.days_off} />
             </div>
             <div style={{ flexGrow:1}}>
                 timeslots
@@ -53,7 +54,7 @@ function Consultant(props){
 }
 
 function LoadCalendar(props){
-    async function disableWeekends(date) {
+    function disableWeekends(date) {
         const data=props.days_off;
         let check=false;
         for(let i=0;i<data.length;i++){
@@ -61,12 +62,15 @@ function LoadCalendar(props){
         }
         return check;
       }
+      if(!props.days_off)return(
+        <CircularProgress />
+      )
     return(
         <div style={{width:'70%'}}>
             <LocalizationProvider dateAdapter={AdapterDayjs}>
                 <DateCalendar value={props.value} onChange={async(newValue) => {
-                    await props.setValue(newValue);
-                    }} disablePast views={['day']} shouldDisableDate={disableWeekends}/>
+                    props.setValue(newValue);
+                    }} disablePast views={['day']}  shouldDisableDate={disableWeekends} />
             </LocalizationProvider>
         </div>
     )
