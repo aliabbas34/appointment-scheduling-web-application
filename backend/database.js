@@ -103,4 +103,14 @@ export async function getUserById(id){
     return data[0][0];
 }
 
+export async function getBookedAppointments(email,date){
+    const data=await pool.query(`
+    SELECT start_time,end_time FROM appointment
+    Where consultant=? AND date=?
+    `,[email,date]);
+    return data[0];
+}
+
+// const result =await getBookedAppointments('test11@mail.com','2023-09-16');
+// console.log(result);
 

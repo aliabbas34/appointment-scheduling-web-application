@@ -2,7 +2,9 @@ import express from "express";
 import cors from "cors";
 import dotenv from "dotenv";
 import jwt from "jsonwebtoken";
-import { addUserData, addBreaks, addDaysOff, addWorkingHours, getUserByEmail, updateWorkinHours, getWorkingHoursByEmail, getAllDataByEmail, getBreaksByEmail, getDaysOffByEmail, deleteBreakById, updateBreakById, deleteDaysOffViaEmail, getAllConsultants, getUserById } from "./database.js";
+import dayjs from 'dayjs';
+import { addUserData, addBreaks, addDaysOff, addWorkingHours, getUserByEmail, updateWorkinHours, getWorkingHoursByEmail, getAllDataByEmail, getBreaksByEmail, getDaysOffByEmail, deleteBreakById, updateBreakById, deleteDaysOffViaEmail, getAllConsultants, getUserById, getBookedAppointments } from "./database.js";
+import { getAvailableSlots } from "./check.js";
 
 const app=express();
 
@@ -319,7 +321,7 @@ app.get('/home',authenticateUser, async(req,res)=>{
             const working_hours=await getWorkingHoursByEmail(data.email);
             const days_off=await getDaysOffByEmail(data.email);
             let daysOffData=[];
-            days_off.map((data)=>{
+            days_off.map(async(data)=>{
                 daysOffData=[...daysOffData,data.dayname];
             });
             const newData={
@@ -330,10 +332,8 @@ app.get('/home',authenticateUser, async(req,res)=>{
                 days_off:daysOffData
             };
             consultantData.push(newData);
-        })
-        // console.log(consultantData);
+        })//remove set timeout by studying promise.all
         setTimeout(()=>{
-            console.log(consultantData);
             res.status(200).json({message:"data fetch successfull",data:{name:user[0].name,consultantData:consultantData}});
         },100);
         // res.status(200).json({message:"data fetch successfull",data:{name:user[0].name,consultantData:consultantData}});
@@ -348,7 +348,52 @@ app.get('/book/consultant-data/:id',authenticateUser,async (req,res)=>{
         const id=parseInt(req.params.id);
         const data=await getUserById(id);
         const days_off=await getDaysOffByEmail(data.email);
-        let parsedDaysOff=[];
+        let parsedDaysOff=parseDaysOff(days_off);
+        res.status(200).json({message:'consultant name fetch successfull',data:{...data,days_off:parsedDaysOff}});
+    }catch(err){
+        console.log(err);
+        res.status(500).json({message:'error occured while fetching consultant data'});
+    }
+})
+
+
+app.post('/book/appointment',authenticateUser,async(req,res)=>{
+    try{
+        const id=req.body.id;
+        const dateTime=req.body.dateTime;
+        const recievedDate=dayjs(dateTime.split('T')[0]);
+        const day=recievedDate.get('day');
+        const emailObject=await getUserById(id);
+        const email=emailObject.email;
+        const days_off=await getDaysOffByEmail(email);
+        const parsedDaysOff=parseDaysOff(days_off);
+        let dayOff=false;
+        for(let i=0;i<parsedDaysOff.length;i++){
+            if(parsedDaysOff[i]===day){//check type of day
+                dayOff=true;
+                break;
+            }
+        }
+        if(dayOff) res.status(200).json({message:'fetch succesfull',data:{dayOff:dayOff}});
+        const working_hours=await getWorkingHoursByEmail(email);
+        const breaks=await getBreaksByEmail(email);
+        const curDate=recievedDate.format('YYYY-MM-DD');
+        const todaysDate=dayjs().format('YYYY-MM-DD');
+        let curTime="";
+        if(curDate===todaysDate){
+            curTime=dayjs().format('HH:mm');
+        }
+        const appointments=await getBookedAppointments(email,curDate);
+        const availableSlots=getAvailableSlots(working_hours[0],breaks,appointments,curTime);
+        res.status(200).json({message:'fetch successful',data:{slots:availableSlots,dayOff:dayOff}});
+    }catch(err){
+        console.log(err);
+        res.status(500).json({message:"some error occured in backend while fetching data for available slots"});
+    }
+})
+
+function parseDaysOff(days_off){
+    let parsedDaysOff=[];
         for(let i=0;i<days_off.length;i++){
             if(days_off[i].dayname==='sunday') parsedDaysOff.push(0);
             else if(days_off[i].dayname==='monday') parsedDaysOff.push(1);
@@ -358,52 +403,8 @@ app.get('/book/consultant-data/:id',authenticateUser,async (req,res)=>{
             else if(days_off[i].dayname==='friday') parsedDaysOff.push(5);
             else if(days_off[i].dayname==='saturday') parsedDaysOff.push(6);
         }
-        console.log(parsedDaysOff,"check");
-        console.log(days_off);
-        
-        res.status(200).json({message:'consultant name fetch successfull',data:{...data,days_off:parsedDaysOff}});
-    }catch(err){
-        console.log(err);
-        res.status(500).json({message:'error occured while fetching consultant data'});
-    }
-})
-
-
-//convert time given in HH:MM format to minutes.
-function convertToMinutes(time){
-    const arr=time.split(":");
-    const hour=parseInt(arr[0]);
-    const mins=parseInt(arr[1]);
-    const minutes=hour*60+mins;
-    return minutes;
+        return parsedDaysOff;
 }
-//convert given minutes into time format HH:MM
-function convertToString(minutes){
-    //by dividing with 60 we can get a decimal value, value before decimal is hour and after decimal is minutes.
-    //so we have to parse that accordingly.
-    const calc=minutes/60;
-    //check whether it is decimal or not
-    let isDecimal=true;
-    if((calc*10)%10===0) isDecimal=false;
-    if(isDecimal){
-        const str=calc.toString();
-        const arr=str.split('.');
-        //removing decimal from the decimal part.
-        const len=arr[1].length;
-        let divisor="1";
-        for(let i=0;i<len;i++) divisor+="0";
-        const divisorInt=parseInt(divisor);
-        const minutes=Math.round((parseInt(arr[1])/divisorInt)*60);
-        const hour=arr[0];
-        const ansString=hour+":"+minutes;
-        return ansString;
-    }
-    else{
-        const ansString=calc.toString()+":00";
-        return ansString;
-    }
-}
-
 
 app.listen(3000,()=>{
     console.log("server running on port 3000");

@@ -32,3 +32,14 @@ CREATE TABLE days_off(
     email VARCHAR(50) NOT NULL,
     FOREIGN KEY(email) REFERENCES user(email)
 );
+
+CREATE TABLE appointment(
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    user VARCHAR(50),
+    consultant VARCHAR(50),
+    date VARCHAR(10),
+    start_time VARCHAR(10),
+    end_time VARCHAR(10),
+    FOREIGN KEY(user) REFERENCES user(email),
+    FOREIGN KEY(consultant) REFERENCES user(email)
+);
