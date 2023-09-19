@@ -3,7 +3,7 @@ import cors from "cors";
 import dotenv from "dotenv";
 import jwt from "jsonwebtoken";
 import dayjs from 'dayjs';
-import { addUserData, addBreaks, addDaysOff, addWorkingHours, getUserByEmail, updateWorkinHours, getWorkingHoursByEmail, getAllDataByEmail, getBreaksByEmail, getDaysOffByEmail, deleteBreakById, updateBreakById, deleteDaysOffViaEmail, getAllConsultants, getUserById, getBookedAppointments } from "./database.js";
+import { addUserData, addBreaks, addDaysOff, addWorkingHours, getUserByEmail, updateWorkinHours, getWorkingHoursByEmail, getAllDataByEmail, getBreaksByEmail, getDaysOffByEmail, deleteBreakById, updateBreakById, deleteDaysOffViaEmail, getAllConsultants, getUserById, getBookedAppointments, bookAppointment } from "./database.js";
 import { getAvailableSlots } from "./check.js";
 
 const app=express();
@@ -389,6 +389,22 @@ app.post('/book/appointment',authenticateUser,async(req,res)=>{
     }catch(err){
         console.log(err);
         res.status(500).json({message:"some error occured in backend while fetching data for available slots"});
+    }
+})
+
+app.post('/book/appointment-slot',authenticateUser,async(req,res)=>{
+    try{
+        const userEmail=req.email;
+        const data=req.body;
+        const consultantEmail=data.email;
+        const start_time=data.start_time;
+        const end_time=data.end_time;
+        const date=data.date.split('T')[0];
+        await bookAppointment(userEmail,consultantEmail,date,start_time,end_time);
+        res.status(200).json({message:'appointment booked'});
+    }catch(err){
+        console.log(err);
+        res.status(500).json({message:"some error occured in backend while booking appointment slot"});
     }
 })
 

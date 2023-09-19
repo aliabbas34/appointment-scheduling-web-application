@@ -111,6 +111,20 @@ export async function getBookedAppointments(email,date){
     return data[0];
 }
 
-// const result =await getBookedAppointments('test11@mail.com','2023-09-16');
+export async function bookAppointment(userEmail,consultantEmail,date,start_time,end_time){
+    try{
+        await pool.query(`
+        INSERT INTO appointment(user,consultant,date,start_time,end_time)
+        VALUES(?,?,?,?,?)
+        `,[userEmail,consultantEmail,date,start_time,end_time])
+    }catch(err){
+        console.log(err);
+    }
+}
+
+// const result =await getBookedAppointments('test1@mail.com','2023-09-19');
+// console.log(result);
+
+// const result =await pool.query('SELECT * FROM appointment');
 // console.log(result);
 
