@@ -1,6 +1,6 @@
 import axios from "axios";
 import { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
+import { Navigate, useNavigate, useParams } from "react-router-dom";
 import Typography from '@mui/material/Typography';
 import dayjs from "dayjs";
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
@@ -110,13 +110,16 @@ function LoadCalendar(props){
 
 function Timeslots(props){
 
+
+    const navigate=useNavigate();
+
     const[timeSlot,setTimeSlot]=useState({
-        email:props.email,
+        date:"",
+        email:"",
         start_time:"",
         end_time:""
     });
     const[warning,setWarning]=useState(false);
-    let variant="outlined";
     if(!props.data){
         return(
             <CircularProgress></CircularProgress>
@@ -144,23 +147,30 @@ function Timeslots(props){
         <div>
             {warning?<Typography sx={{color:'red'}} variant="overline">*select a slot please</Typography>:<></>}
         </div>
+        {console.log(timeSlot)}
         <div style={{display:'flex',flexDirection:'column',justifyContent:"column"}}>
             {props.data.slots.map((data,index)=>{
                 return(
                 <Button sx={{maxWidth:'180px',margin:'10px'}} variant="outlined" onClick={()=>{
-                    setTimeSlot({...timeSlot,start_time:data.start_time,end_time:data.end_time});
+                    setTimeSlot({...timeSlot,date:props.date,email:props.email,start_time:data.start_time,end_time:data.end_time});
                     setWarning(false);
                 }}>{data.start_time+" - "+data.end_time}</Button>
                 )
             })}
         </div>
         <div style={{marginTop:'30px'}}>
-            <Button variant="text" onClick={()=>{
-                if(timeSlot.start_time===""&&timeSlot.end_time===""){
+            <Button variant="text" onClick={async()=>{
+                if(timeSlot.start_time===""&&timeSlot.end_time===""&&email===""&&date===""){
                     setWarning(true);
                     return;
                 }
-                alert(timeSlot)//backend req.
+                const promise=await axios.post('http://localhost:3000/book/appointment-slot',timeSlot,{
+                    headers:{
+                    "Authorization":"Bearer "+localStorage.getItem("token")
+                }
+                });
+                alert(promise.data.message);
+                navigate('/home')
             }}>Book Appointment</Button>
         </div>
         
