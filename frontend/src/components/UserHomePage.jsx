@@ -70,6 +70,9 @@ function UserHomePage(){
     return(
         <div>
         <div style={{display:'flex',justifyContent:'end',margin:'30px'}}>
+          <Button variant='text' sx={{marginRight:'20px'}} onClick={()=>{
+            navigate("/show/appointment");
+          }}>My appointments</Button>
           <Button variant='contained' onClick={()=>{
             localStorage.removeItem("token");
             navigate("/login");

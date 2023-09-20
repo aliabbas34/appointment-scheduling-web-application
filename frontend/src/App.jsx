@@ -11,6 +11,8 @@ import UserLogin from './components/UserLogin';
 import UserRegister from './components/UserRegister';
 import UserHomePage from './components/UserHomePage';
 import BookAppointment from './components/BookAppointment';
+import UserAppointments from './components/UserAppointments';
+import ConsultantAppointments from './components/ConsultantAppointments';
 
 function App() {
 
@@ -25,12 +27,12 @@ function App() {
                 <Route path="/consultant/working-hours" element={<EditWorkingHours />} />
                 <Route path="/consultant/breaks" element={<EditBreaks />} />
                 <Route path="/consultant/days-off" element={<EditDaysOff />} />
+                <Route path="/consultant/show/appointment" element={<ConsultantAppointments/>} />
                 <Route path="/login" element={<UserLogin />} />
                 <Route path="/register" element={<UserRegister />} />
                 <Route path="/home" element={<UserHomePage />} />
                 <Route path="/book/:id" element={<BookAppointment/>} />
-                
-                {/* <Route path={"/edit-course/:courseId"} element={<Edit/>}></Route> */}
+                <Route path="/show/appointment" element={<UserAppointments/>} />
             </Routes>
       </Router>
     </>

@@ -38,6 +38,9 @@ function HomePage(){
     return(
         <div style={{backgroundColor:"rgb(243, 246, 249)"}}>
             <div style={{display:'flex',justifyContent:'end'}}>
+                <Button variant='text' sx={{marginRight:'20px'}} onClick={()=>{
+                    navigate("/consultant/show/appointment");
+                }}>My appointments</Button>
                 <Button variant='contained' onClick={()=>{
                     localStorage.removeItem("token");
                     navigate("/consultant/login");
