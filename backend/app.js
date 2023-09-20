@@ -3,7 +3,7 @@ import cors from "cors";
 import dotenv from "dotenv";
 import jwt from "jsonwebtoken";
 import dayjs from 'dayjs';
-import { addUserData, addBreaks, addDaysOff, addWorkingHours, getUserByEmail, updateWorkinHours, getWorkingHoursByEmail, getAllDataByEmail, getBreaksByEmail, getDaysOffByEmail, deleteBreakById, updateBreakById, deleteDaysOffViaEmail, getAllConsultants, getUserById, getBookedAppointments, bookAppointment } from "./database.js";
+import { addUserData, addBreaks, addDaysOff, addWorkingHours, getUserByEmail, updateWorkinHours, getWorkingHoursByEmail, getAllDataByEmail, getBreaksByEmail, getDaysOffByEmail, deleteBreakById, updateBreakById, deleteDaysOffViaEmail, getAllConsultants, getUserById, getBookedAppointments, bookAppointment, getBookedAppointmentByEmail } from "./database.js";
 import { getAvailableSlots } from "./check.js";
 
 const app=express();
@@ -273,6 +273,23 @@ app.put('/consultant/daysOff/update',authenticateAdmin, async(req,res)=>{
     }
 });
 
+app.get('/consultant/show/appointment',authenticateAdmin,async (req,res)=>{
+    try{
+        const email=req.email;
+        const role='consultant';
+        let data=[];
+        const appointmentData=await getBookedAppointmentByEmail(email,role);
+        for(let i=0;i<appointmentData.length;i++){
+            const userData=await getUserByEmail(appointmentData[i].user);
+            data.push({appointmentData:appointmentData[i],userName:userData[0].name});
+        }
+        res.status(200).json({message:"fetch successfull",data:data});
+    }catch(err){
+        console.log(err);
+        res.status(500).json({message:"something went wrong while fetching data through backend"});
+    }
+})
+
 
 //user routes
 
@@ -405,6 +422,23 @@ app.post('/book/appointment-slot',authenticateUser,async(req,res)=>{
     }catch(err){
         console.log(err);
         res.status(500).json({message:"some error occured in backend while booking appointment slot"});
+    }
+})
+
+app.get('/show/appointment',authenticateUser,async (req,res)=>{
+    try{
+        const email=req.email;
+        const role='user';
+        let data=[];
+        const appointmentData=await getBookedAppointmentByEmail(email,role);
+        for(let i=0;i<appointmentData.length;i++){
+            const userData=await getUserByEmail(appointmentData[i].consultant);
+            data.push({appointmentData:appointmentData[i],consultantName:userData[0].name});
+        }
+        res.status(200).json({message:"fetch successfull",data:data});
+    }catch(err){
+        console.log(err);
+        res.status(500).json({message:"something went wrong while fetching data through backend"});
     }
 })
 

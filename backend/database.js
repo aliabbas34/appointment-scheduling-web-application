@@ -111,6 +111,24 @@ export async function getBookedAppointments(email,date){
     return data[0];
 }
 
+export async function getBookedAppointmentByEmail(email,role){
+    if(role==='user'){
+        const data=await pool.query(`
+        SELECT * FROM appointment
+        WHERE user=?
+        `,[email]);
+        return data[0];
+    }
+    else{
+        const data=await pool.query(`
+        SELECT * FROM appointment
+        WHERE consultant=?
+        `,[email]);
+        return data[0];
+    }
+    
+}
+
 export async function bookAppointment(userEmail,consultantEmail,date,start_time,end_time){
     try{
         await pool.query(`
