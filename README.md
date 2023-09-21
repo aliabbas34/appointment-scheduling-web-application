@@ -62,6 +62,7 @@ To run this project, you will need to add the following environment variables to
 `MYSQL_DATABASE`
 `SECRET`
 `SENDER_MAIL`
+`MAIL_PASS`
 
 &nbsp;
 
