@@ -1,16 +1,14 @@
-
 # Appointment Scheduling Web Application
 
 As the name describes it is an Appointment scheduler. which offers services to both parties. One, who wants to list their working hours and other details. Two, who wants to book an oppointment with the listed businesses.
 
 ## Requirements
 
-To run this project locally you need few things installed on your computer. 
+To run this project locally you need few things installed on your computer.
 
 1. node.js
 2. mysql
 3. mysql workbench
-
 
 ## Setting up Project Locally
 
@@ -43,9 +41,11 @@ Go to the DB directory
 ```bash
     cd DB
 ```
+
 Copy the contents from schema.sql and paste it into sql workbench then run it to create database and required tables.
 
 Otherwise you can do it using terminal.
+
 1. Open Command Prompt.
 2. Navigate to the bin folder. For example: cd C:\Program Files\MySQL\MySQL Server 8.0\bin.
 3. Run the mysql -u root -p command.
@@ -61,6 +61,7 @@ To run this project, you will need to add the following environment variables to
 `MYSQL_PASSWORD`
 `MYSQL_DATABASE`
 `SECRET`
+`SENDER_MAIL`
 
 &nbsp;
 
@@ -69,7 +70,6 @@ Start the server
 ```bash
   node app.js
 ```
-
 
 Go to the frontend directory
 
@@ -82,9 +82,9 @@ Install dependencies
 ```bash
   npm install
 ```
+
 Start the frontend server
 
 ```bash
     npm run dev
 ```
-
