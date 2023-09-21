@@ -334,27 +334,24 @@ app.get('/home',authenticateUser, async(req,res)=>{
         const user=await getUserByEmail(email);
         const consultants=await getAllConsultants();
         let consultantData=[];
-        consultants.map(async(data)=>{
-            const name=data.name;
-            const working_hours=await getWorkingHoursByEmail(data.email);
-            const days_off=await getDaysOffByEmail(data.email);
+        for(let i=0;i<consultants.length;i++){
+            const name=consultants[i].name;
+            const working_hours=await getWorkingHoursByEmail(consultants[i].email);
+            const days_off=await getDaysOffByEmail(consultants[i].email);
             let daysOffData=[];
-            days_off.map(async(data)=>{
-                daysOffData=[...daysOffData,data.dayname];
-            });
+            for(let j=0;j<days_off.length;j++){
+                daysOffData.push(days_off[j].dayname);
+            }
             const newData={
-                id:data.id,
+                id:consultants[i].id,
                 name:name,
                 opens_at:working_hours[0].opens_at,
                 closes_at:working_hours[0].closes_at,
                 days_off:daysOffData
             };
             consultantData.push(newData);
-        })//remove set timeout by studying promise.all
-        setTimeout(()=>{
-            res.status(200).json({message:"data fetch successfull",data:{name:user[0].name,consultantData:consultantData}});
-        },100);
-        // res.status(200).json({message:"data fetch successfull",data:{name:user[0].name,consultantData:consultantData}});
+        }
+        res.status(200).json({message:"data fetch successfull",data:{name:user[0].name,consultantData:consultantData}});
     }catch(err){
         console.log(err);
         res.status(500).json({message:"error occured in backend's home route"});
@@ -387,7 +384,7 @@ app.post('/book/appointment',authenticateUser,async(req,res)=>{
         const parsedDaysOff=parseDaysOff(days_off);
         let dayOff=false;
         for(let i=0;i<parsedDaysOff.length;i++){
-            if(parsedDaysOff[i]===day){//check type of day
+            if(parsedDaysOff[i]===day){
                 dayOff=true;
                 break;
             }
@@ -431,7 +428,6 @@ app.post('/book/appointment-slot',authenticateUser,async(req,res)=>{
         Your appointment with ${consultantData[0].name} is booked on ${date} for 1 hour, starting at : ${start_time} and ending at : ${end_time}.
         
         Thankyou!`;
-        // console.log(from,to,subject,text);
         await mailer(from,to,subject,text);
         res.status(200).json({message:'appointment booked'});
     }catch(err){

@@ -94,8 +94,7 @@ for(let k=0;k<slots.length;k++){
     }
     slotsInHour.push(entry);
 }
-// console.log(slotsInHour,"slots in hour");
-// console.log(appointmentBooked,"appointments booked so far");
+
 //filtering out available slots.
 const availableSlots=slotsInHour.filter((dataOne)=>{
     let ans=true;
@@ -106,7 +105,6 @@ const availableSlots=slotsInHour.filter((dataOne)=>{
     });
     return ans;
 });
-// console.log(availableSlots,"available slots");
 return availableSlots;
 
 }
