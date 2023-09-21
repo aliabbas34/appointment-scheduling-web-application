@@ -4,7 +4,8 @@ import dotenv from "dotenv";
 import jwt from "jsonwebtoken";
 import dayjs from 'dayjs';
 import { addUserData, addBreaks, addDaysOff, addWorkingHours, getUserByEmail, updateWorkinHours, getWorkingHoursByEmail, getAllDataByEmail, getBreaksByEmail, getDaysOffByEmail, deleteBreakById, updateBreakById, deleteDaysOffViaEmail, getAllConsultants, getUserById, getBookedAppointments, bookAppointment, getBookedAppointmentByEmail } from "./database.js";
-import { getAvailableSlots } from "./check.js";
+import { getAvailableSlots } from "./appointment.js";
+import { mailer } from "./mailer.js";
 
 const app=express();
 
@@ -418,6 +419,20 @@ app.post('/book/appointment-slot',authenticateUser,async(req,res)=>{
         const end_time=data.end_time;
         const date=data.date.split('T')[0];
         await bookAppointment(userEmail,consultantEmail,date,start_time,end_time);
+        const consultantData=await getUserByEmail(consultantEmail);
+        const userData=await getUserByEmail(userEmail);
+        //send mail here
+        const from=process.env.SENDER_MAIL;
+        const to=userEmail;
+        const subject=`Appointment booked with ${consultantData[0].name}`;
+        const text=`
+        Hey ${userData[0].name},
+
+        Your appointment with ${consultantData[0].name} is booked on ${date} for 1 hour, starting at : ${start_time} and ending at : ${end_time}.
+        
+        Thankyou!`;
+        // console.log(from,to,subject,text);
+        await mailer(from,to,subject,text);
         res.status(200).json({message:'appointment booked'});
     }catch(err){
         console.log(err);
