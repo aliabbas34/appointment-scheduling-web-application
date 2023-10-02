@@ -115,6 +115,10 @@ function RegisterForm(){
         <Button onClick={handleNext}>
                 {activeStep === steps.length - 1 ? 'Submit' : 'Next'}
         </Button>
+        {/* <Button>
+        {activeStep === steps.length - 1 ? <a style={{margin:'5px'}} href="http://localhost:3000/google">authenticate google account</a>:<></>}
+        </Button> */}
+        
         </div>
         <div style={{display:"flex",justifyContent:"start", marginTop:"30px", marginLeft:"30px",marginBottom:"20px"}}> <Typography variant="body1" gutterBottom>Already a user? <a href="/consultant/login">Login</a></Typography></div>
         </div>

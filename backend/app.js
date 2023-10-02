@@ -6,12 +6,44 @@ import dayjs from 'dayjs';
 import { addUserData, addBreaks, addDaysOff, addWorkingHours, getUserByEmail, updateWorkinHours, getWorkingHoursByEmail, getAllDataByEmail, getBreaksByEmail, getDaysOffByEmail, deleteBreakById, updateBreakById, deleteDaysOffViaEmail, getAllConsultants, getUserById, getBookedAppointments, bookAppointment, getBookedAppointmentByEmail } from "./database.js";
 import { getAvailableSlots } from "./appointment.js";
 import { mailer } from "./mailer.js";
+import { google } from "googleapis";
+import bcrypt from 'bcrypt';
 
 const app=express();
 
 app.use(express.json());
 app.use(cors());
 dotenv.config();
+
+const oauth2Client = new google.auth.OAuth2(
+    process.env.CLIENT_ID,
+    process.env.CLIENT_SECRET,
+    process.env.REDIRECT_URL
+);
+
+const scopes = [
+    'https://www.googleapis.com/auth/calendar'
+  ];
+
+  const calendar=google.calendar({
+    version:'v3',
+    auth:process.env.API_KEY
+  });
+
+  app.get('/google',(req,res)=>{
+    const url=oauth2Client.generateAuthUrl({
+        access_type: "offline",
+        scope:scopes
+    });
+    res.redirect(url);
+  });
+
+  app.get('/google/redirect',async(req,res)=>{
+    const code=req.query.code;
+    const {tokens} = await oauth2Client.getToken(code)
+    oauth2Client.setCredentials(tokens);
+    res.redirect('http://localhost:5173/consultant/home');
+  });
 
 //middleware
 function authenticateAdmin(req,res,next){
@@ -101,11 +133,12 @@ app.post('/consultant/register',async(req,res)=>{
         let userDoNotExist=false;
         if(userData.length===0) userDoNotExist=true;
 
+        const pass=await bcrypt.hash(password,process.env.SALT);
+        
         if(userDoNotExist){//add data to database.
-            await addUserData(email,name,"consultant",password);
+            await addUserData(email,name,"consultant",pass);
             await addWorkingHours(email,working_hours.opens_at,working_hours.closes_at);
             breaks.map(async(data)=>{
-                console.log(data);
                 await addBreaks(data.break_title,email,data.start_time,data.end_time);
             });
             days_off.map(async(data)=>{
@@ -130,7 +163,8 @@ app.post('/consultant/login', async(req,res)=>{
     const {email,password}=req.body;
     const userData=await getUserByEmail(email);
     if(userData.length===1){
-        if(userData[0].password===password&&userData[0].role==='consultant'){
+        const pass=await bcrypt.hash(password,process.env.SALT);
+        if(userData[0].password===pass&&userData[0].role==='consultant'){
             const token=jwt.sign({email,role:'consultant'},process.env.SECRET,{expiresIn:'12h'});
             res.status(200).json({message:"Login success",token:token});
         }
@@ -299,7 +333,8 @@ app.post('/login', async(req,res)=>{
     const {email,password}=req.body;
     const userData=await getUserByEmail(email);
     if(userData.length===1){
-        if(userData[0].password===password&&userData[0].role==='user'){
+        const pass=await bcrypt.hash(password,process.env.SALT);
+        if(userData[0].password===pass&&userData[0].role==='user'){
             const token=jwt.sign({email,role:'user'},process.env.SECRET,{expiresIn:'12h'});
             res.status(200).json({message:"Login success",token:token});
         }
@@ -314,8 +349,9 @@ app.post('/register', async(req,res)=>{
         const userData=await getUserByEmail(email);
         let userDoNotExist=false;
         if(userData.length===0) userDoNotExist=true;
+        const pass=await bcrypt.hash(password,process.env.SALT);
         if(userDoNotExist){//add user to schema.
-            await addUserData(email,name,"user",password);
+            await addUserData(email,name,"user",pass);
             const token=jwt.sign({email,role:'user'},process.env.SECRET,{expiresIn:'12h'});
             res.status(200).json({message:"user registration successfull",token:token});
         }
@@ -429,6 +465,15 @@ app.post('/book/appointment-slot',authenticateUser,async(req,res)=>{
         
         Thankyou!`;
         await mailer(from,to,subject,text);
+        //create an event here
+        // calendar.events.insert({
+        //     calendarId:'primary',
+        //     auth:oauth2Client,
+        //     requestBody:{
+        //         summary:'Appointment scheduled',
+        //         description:'appointment'
+        //     }
+        // })
         res.status(200).json({message:'appointment booked'});
     }catch(err){
         console.log(err);

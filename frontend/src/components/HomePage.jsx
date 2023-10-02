@@ -3,9 +3,12 @@ import Typography from '@mui/material/Typography';
 import { useState, useEffect } from 'react';
 import axios from 'axios';
 import Button from '@mui/material/Button';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
+
 
 function HomePage(){
+
+    
 
     const navigate=useNavigate();
 

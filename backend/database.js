@@ -1,6 +1,8 @@
 import mysql from "mysql2";
 import dotenv from "dotenv";
 
+
+
 dotenv.config();
 
 const pool = mysql.createPool({
@@ -139,6 +141,11 @@ export async function bookAppointment(userEmail,consultantEmail,date,start_time,
         console.log(err);
     }
 }
+
+// const dat=await pool.query("DELETE FROM user WHERE email LIKE 'test%'");
+
+// const data=await pool.query("SELECT * FROM user");
+// console.log(data[0]);
 
 // const result =await getBookedAppointments('test1@mail.com','2023-09-19');
 // console.log(result);
